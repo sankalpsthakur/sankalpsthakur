@@ -10,4 +10,4 @@ Founder of [Transient Labs](https://transientlabs.ai), building industrial AI, e
 
 ## Elsewhere
 
-[Kaggle](https://www.kaggle.com/thakursankalp) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [X](https://x.com/sankalpsthakur) · [Scalematics](https://scalematics.substack.com/)
+[Kaggle](https://www.kaggle.com/thakursankalp) · [Hugging Face](https://huggingface.co/sankalphimself) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [X](https://x.com/sankalpsthakur) · [Scalematics](https://scalematics.substack.com/)
