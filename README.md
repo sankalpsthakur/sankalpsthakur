@@ -26,6 +26,8 @@ That experiment grew into [`games`](https://github.com/sankalpsthakur/games): 18
 
 The Scope 3 line ([carbon](https://github.com/sankalpsthakur/carbon) → [calculation](https://github.com/sankalpsthakur/scope3-calculation) → [strategy](https://github.com/sankalpsthakur/scope3-strategy)) is the same pattern on a different problem: agents are useful only if the trail is versioned and reviewable.
 
+I've also been landing small fixes upstream where the industrial stack actually lives — [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971) (sync timeout under garbage serial), [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998) (client request backpressure), [FlexMeasures](https://github.com/FlexMeasures/flexmeasures/pull/2343) (scheduler / CLI / 2FA docs), and [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib/pull/8797) (OPENNEM consumption + a couple source-link fixes). Not maintainer theatre — just patches that merged.
+
 ## Find me
 
 [X](https://x.com/sankalpsthakur) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [Kaggle](https://www.kaggle.com/sankalpsthakur) · [Scalematics](https://scalematics.substack.com/) · [Transient Labs](https://transientlabs.ai)
