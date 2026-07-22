@@ -1,33 +1,27 @@
 # Sankalp Thakur
 
-I run [Transient Labs](https://transientlabs.ai). Most of my public work sits around industrial AI, energy systems, and making agent workflows auditable enough that you'd trust them near a plant — SCADA/PLC/OPC UA on one side, ERP/MES/PLM on the other.
-
-What follows is stuff you can actually open. Demos and toolkits, not claims about live plants.
+I run [Transient Labs](https://transientlabs.ai). Public work is industrial AI, energy systems, and auditable agents near plant systems — SCADA/PLC/OPC UA ↔ ERP/MES/PLM.
 
 ## What I've shipped
 
-**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** is a fictional ISO 50001 energy-management prototype for a made-up site called Nordhaven. Browser UI, simulator-only control plane, 49 browser tests, [live demo](https://transient-energy-ems.onrender.com). Nothing here talks to real equipment — that's intentional.
+**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** — fictional ISO 50001 EnMS prototype: simulator-only control, 49 browser tests, [live demo](https://transient-energy-ems.onrender.com). No real equipment.
 
-**[Carbon](https://github.com/sankalpsthakur/carbon)** is an agent + MCP toolkit for Scope 1/2/3 accounting. On npm as [`@sankalpsthakur/carbon`](https://www.npmjs.com/package/@sankalpsthakur/carbon) (`0.2.0`).
+**[Carbon](https://github.com/sankalpsthakur/carbon)** — agent + MCP toolkit for Scope 1/2/3 accounting. [`@sankalpsthakur/carbon`](https://www.npmjs.com/package/@sankalpsthakur/carbon) (`0.2.0`).
 
-**[Scope 3 Calculation](https://github.com/sankalpsthakur/scope3-calculation)** is the local MVP behind that: ingest → factor mapping → data-quality scoring → versioned runs, approvals, restatements. Baseline inventory work, not finance-grade LCA.
+**[Scope 3 Calculation](https://github.com/sankalpsthakur/scope3-calculation)** — local MVP behind that. Baseline inventory, not finance-grade LCA.
 
 ## Still cooking
 
-- [Scope 3 Strategy](https://github.com/sankalpsthakur/scope3-strategy) — CSRD double-materiality / LCA → ESRS direction
-- [PlantOpsBench](https://github.com/sankalpsthakur/plantopsbench) — stub Inspect AI evals for plant-ops decisions (synthetic vignettes only)
-- [Plugins](https://github.com/sankalpsthakur/plugins) — Claude plugins for the Scope 3 stack plus delivery workflows
+- [Scope 3 Strategy](https://github.com/sankalpsthakur/scope3-strategy) — CSRD double-materiality / LCA → ESRS
+- [PlantOpsBench](https://github.com/sankalpsthakur/plantopsbench) — stub Inspect AI evals for plant-ops decisions
+- [Plugins](https://github.com/sankalpsthakur/plugins) — Claude plugins for Scope 3 + delivery
 
 ## How things connect
 
-I wrote about a small [poker simulation on X](https://x.com/sankalpsthakur/status/1888895644628087220) in Feb 2025 — three cards, bet/check/call/fold, fixed opponent policy, a few RL methods. That thread did better than most of my posts (~15k views), mostly because the point was concrete: predictable strategies lose under imperfect information.
+A [poker sim note on X](https://x.com/sankalpsthakur/status/1888895644628087220) (predictable strategies lose under imperfect info) grew into [`games`](https://github.com/sankalpsthakur/games) — 18 game-theoretic environments, same idea, wider harness.
 
-That experiment grew into [`games`](https://github.com/sankalpsthakur/games): 18 game-theoretic environments (poker included), PPO/A2C/DQN, mock video tells, opponent profiling, multi-seed significance. Same idea, wider harness.
-
-The Scope 3 line ([carbon](https://github.com/sankalpsthakur/carbon) → [calculation](https://github.com/sankalpsthakur/scope3-calculation) → [strategy](https://github.com/sankalpsthakur/scope3-strategy)) is the same pattern on a different problem: agents are useful only if the trail is versioned and reviewable.
-
-I've also been landing small fixes upstream where the industrial stack actually lives — [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971) (sync timeout under garbage serial), [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998) (client request backpressure), [FlexMeasures](https://github.com/FlexMeasures/flexmeasures/pull/2343) (scheduler / CLI / 2FA docs), and [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib/pull/8797) (OPENNEM consumption + a couple source-link fixes). Not maintainer theatre — just patches that merged.
+Upstream patches that merged: [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971), [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998), [FlexMeasures](https://github.com/FlexMeasures/flexmeasures/pull/2343), [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib/pull/8797).
 
 ## Find me
 
-[X](https://x.com/sankalpsthakur) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [Kaggle](https://www.kaggle.com/sankalpsthakur) · [Scalematics](https://scalematics.substack.com/) · [Transient Labs](https://transientlabs.ai)
+[X](https://x.com/sankalpsthakur) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [Kaggle](https://www.kaggle.com/sankalpsthakur) · [Transient Labs](https://transientlabs.ai)
