@@ -4,7 +4,9 @@ I run [Transient Labs](https://transientlabs.ai). Public work is industrial AI, 
 
 ## What I've shipped
 
-**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** — fictional ISO 50001 EnMS prototype: simulator-only control, 49 browser tests, [live demo](https://transient-energy-ems.onrender.com). No real equipment.
+**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** — fictional ISO 50001 EnMS prototype: simulator-only control, 49 browser tests. Live: [EMS](https://transient-energy-ems.onrender.com). No real equipment.
+
+**Forge** — system-of-action demo. Live: [forgeagent.onrender.com](https://forgeagent.onrender.com).
 
 **[Carbon](https://github.com/sankalpsthakur/carbon)** — agent + MCP toolkit for Scope 1/2/3 accounting. [`@sankalpsthakur/carbon`](https://www.npmjs.com/package/@sankalpsthakur/carbon) (`0.2.0`).
 
