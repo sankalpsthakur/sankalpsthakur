@@ -4,7 +4,7 @@ I run [Transient Labs](https://transientlabs.ai). Public work is industrial AI, 
 
 ## What I've shipped
 
-**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** — fictional ISO 50001 EnMS prototype: simulator-only control, 49 browser tests. Live: [EMS](https://transient-energy-ems.onrender.com). No real equipment.
+**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** — ISO 50001 EnMS prototype: simulator-backed control path, 49 browser tests. Live: [EMS](https://transient-energy-ems.onrender.com). Some sections protected under NDA.
 
 **Forge** — system-of-action demo. Live: [forgeagent.onrender.com](https://forgeagent.onrender.com).
 
