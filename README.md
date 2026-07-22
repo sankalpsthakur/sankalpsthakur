@@ -20,7 +20,18 @@ I run [Transient Labs](https://transientlabs.ai). Public work is industrial AI, 
 
 A [poker sim note on X](https://x.com/sankalpsthakur/status/1888895644628087220) (predictable strategies lose under imperfect info) grew into [`games`](https://github.com/sankalpsthakur/games) — 18 game-theoretic environments, same idea, wider harness.
 
-Upstream patches that merged: [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971) (sync timeout under garbage serial), [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998) (client request backpressure), [FlexMeasures](https://github.com/FlexMeasures/flexmeasures/pull/2343) (scheduler / CLI / 2FA docs), [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib/pull/8797) (OPENNEM consumption + source-link fixes).
+I've been a contributor to pymodbus, opcua-asyncio, FlexMeasures, and electricitymaps-contrib.
+
+## Classical ↔ quantum
+
+Energy flexibility and intervention choice are binary optimization problems — MIP in production today. The same QUBO can run through Qiskit QAOA on IBM Runtime for a side-by-side comparison. Classical stays the production path; quantum is just another solver behind the same interface. I'm exploring that bridge, not claiming advantage.
+
+Experiments I'm interested in:
+
+- Small FlexMeasures-style storage schedule as QUBO; Gurobi/CBC vs QAOA (objective gap + wall time)
+- Transient Energy opportunity portfolio under budget/interlocks — MIP vs QAOA, same harness
+- Carbon-intensity-aware load shift (Electricity Maps–style signals) as discount/shift QUBO
+- Keep PlantOpsBench / agent / OT I/O paths classical; only swap the optimizer when the decision is combinatorial
 
 ## Find me
 
