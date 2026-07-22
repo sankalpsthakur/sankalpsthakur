@@ -20,7 +20,7 @@ I run [Transient Labs](https://transientlabs.ai). Public work is industrial AI, 
 
 A [poker sim note on X](https://x.com/sankalpsthakur/status/1888895644628087220) (predictable strategies lose under imperfect info) grew into [`games`](https://github.com/sankalpsthakur/games) — 18 game-theoretic environments, same idea, wider harness.
 
-Upstream patches that merged: [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971), [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998), [FlexMeasures](https://github.com/FlexMeasures/flexmeasures/pull/2343), [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib/pull/8797).
+Upstream patches that merged: [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971) (sync timeout under garbage serial), [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998) (client request backpressure), [FlexMeasures](https://github.com/FlexMeasures/flexmeasures/pull/2343) (scheduler / CLI / 2FA docs), [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib/pull/8797) (OPENNEM consumption + source-link fixes).
 
 ## Find me
 
