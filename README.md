@@ -34,7 +34,7 @@ the local mvp behind it. baseline inventory. not finance-grade lca.
 
 ## how things connect
 
-a few years ago a simple poker simulation showed something obvious once you see it: any predictable strategy loses under imperfect information.  
+a few years ago a [simple poker simulation](https://x.com/sankalpsthakur/status/1888895644628087220) showed something obvious once you see it: any predictable strategy loses under imperfect information.  
 that note grew into [games](https://github.com/sankalpsthakur/games) eighteen game-theoretic environments that keep testing the same idea with a wider harness.
 
 the same lesson shows up on the plant floor.  
