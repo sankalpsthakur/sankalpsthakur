@@ -1,40 +1,65 @@
-# Sankalp Thakur
+sankalp thakur
 
-I run [Transient Labs](https://transientlabs.ai). Public work is industrial AI, energy systems, and auditable agents near plant systems — SCADA/PLC/OPC UA ↔ ERP/MES/PLM.
+i run transient labs.
 
-## What I've shipped
+the public work lives in the gap between the plant floor and the rest of the company — industrial ai, energy systems, and agents that have to be auditable near real equipment.
 
-**[Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems)** — ISO 50001 EnMS prototype: simulator-backed control path, 49 browser tests. Live: [EMS](https://transient-energy-ems.onrender.com). Some sections protected under NDA.
+scada / plc / opc ua still speak one language.  
+erp / mes / plm speak another.  
+most days the translation is a person copying a number, then joining a call to explain why it changed.  
+we call it process. it is usually just a bug with a salary.
 
-**Forge** — system-of-action demo. Live: [forgeagent.onrender.com](https://forgeagent.onrender.com).
+what i have shipped
 
-**[Carbon](https://github.com/sankalpsthakur/carbon)** — agent + MCP toolkit for Scope 1/2/3 accounting. [`@sankalpsthakur/carbon`](https://www.npmjs.com/package/@sankalpsthakur/carbon) (`0.2.0`).
+[transient energy](https://github.com/sankalpsthakur/transient-energy-ems)  
+iso 50001 enms prototype. simulator-backed control path. 49 browser tests.  
+live: [ems](https://transient-energy-ems.onrender.com). some sections still under nda.
 
-**[Scope 3 Calculation](https://github.com/sankalpsthakur/scope3-calculation)** — local MVP behind that. Baseline inventory, not finance-grade LCA.
+forge  
+system-of-action demo.  
+live: [forgeagent.onrender.com](https://forgeagent.onrender.com)
 
-## Still cooking
+[carbon](https://github.com/sankalpsthakur/carbon)  
+agent + mcp toolkit for scope 1/2/3.  
+[@sankalpsthakur/carbon](https://www.npmjs.com/package/@sankalpsthakur/carbon) (0.2.0)
 
-- [Scope 3 Strategy](https://github.com/sankalpsthakur/scope3-strategy) — CSRD double-materiality / LCA → ESRS
-- [PlantOpsBench](https://github.com/sankalpsthakur/plantopsbench) — stub Inspect AI evals for plant-ops decisions
-- [Plugins](https://github.com/sankalpsthakur/plugins) — Claude plugins for Scope 3 + delivery
+[scope 3 calculation](https://github.com/sankalpsthakur/scope3-calculation)  
+the local mvp behind it. baseline inventory. not finance-grade lca.
 
-## How things connect
+still cooking
 
-A [poker sim note on X](https://x.com/sankalpsthakur/status/1888895644628087220) (predictable strategies lose under imperfect info) grew into [`games`](https://github.com/sankalpsthakur/games) — 18 game-theoretic environments, same idea, wider harness.
+[scope 3 strategy](https://github.com/sankalpsthakur/scope3-strategy) — csrd double-materiality / lca → esrs  
+[plantopsbench](https://github.com/sankalpsthakur/plantopsbench) — stub inspect ai evals for plant-ops decisions  
+[plugins](https://github.com/sankalpsthakur/plugins) — claude plugins for scope 3 + delivery
 
-I've been a contributor to pymodbus, opcua-asyncio, FlexMeasures, and electricitymaps-contrib.
+how things connect
 
-## Classical ↔ quantum
+a few years ago a simple poker simulation showed something obvious once you see it: any predictable strategy loses under imperfect information.  
+that note grew into [games](https://github.com/sankalpsthakur/games) — eighteen game-theoretic environments that keep testing the same idea with a wider harness.
 
-Energy flexibility and intervention choice are binary optimization problems — MIP in production today. The same QUBO can run through Qiskit QAOA on IBM Runtime for a side-by-side comparison. Classical stays the production path; quantum is just another solver behind the same interface. I'm exploring that bridge, not claiming advantage.
+the same lesson shows up on the plant floor.  
+meters that nobody fully trusts. spreadsheets built by someone who left in 2022. finance, controls, and operations that rarely agree on one baseline.  
+decarbonisation stays a pdf until those three can share the same numbers and the same control loop.
 
-Experiments I'm interested in:
+i have contributed to pymodbus, opcua-asyncio, flexmeasures, and electricitymaps-contrib. the quiet libraries that keep the lights talking to the models.
 
-- Small FlexMeasures-style storage schedule as QUBO; Gurobi/CBC vs QAOA (objective gap + wall time)
-- Transient Energy opportunity portfolio under budget/interlocks — MIP vs QAOA, same harness
-- Carbon-intensity-aware load shift (Electricity Maps–style signals) as discount/shift QUBO
-- Keep PlantOpsBench / agent / OT I/O paths classical; only swap the optimizer when the decision is combinatorial
+classical ↔ quantum
 
-## Find me
+energy flexibility and intervention choice are binary optimisation problems.  
+mip runs in production today. the same qubo can be handed to qiskit qaoa on ibm runtime for a side-by-side look.  
+classical stays the production path. quantum is just another solver behind the same interface.  
+exploring the bridge. not claiming advantage.
 
-[X](https://x.com/sankalpsthakur) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [Kaggle](https://www.kaggle.com/sankalpsthakur) · [Transient Labs](https://transientlabs.ai)
+experiments that still interest me:
+
+- small flexmeasures-style storage schedule as qubo — gurobi/cbc vs qaoa (objective gap + wall time)
+- transient energy opportunity portfolio under budget and interlocks — same harness
+- carbon-intensity-aware load shift (electricity maps style signals) as discount/shift qubo
+- keep plantopsbench, the agents, and the ot i/o classical; only swap the optimiser when the decision is combinatorial
+
+the work is ordinary in the best sense.  
+baselines that survive contact with production. agents that can be audited. handoffs that no longer need a human salary to stay honest.
+
+find me
+
+[x](https://x.com/sankalpsthakur) · [linkedin](https://www.linkedin.com/in/sankalpthakur/) · [kaggle](https://www.kaggle.com/sankalpsthakur) · [transient labs](https://transientlabs.ai)
