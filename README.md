@@ -58,7 +58,6 @@ exploring the bridge. not claiming advantage.
 - keep plantopsbench, the agents, and the ot i/o classical; only swap the optimiser when the decision is combinatorial
 
 the work is ordinary in the best sense.  
-baselines that survive contact with production. agents that can be audited. handoffs that no longer need a human salary to stay honest.
 
 ## find me
 
