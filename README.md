@@ -1,64 +1,41 @@
-sankalp thakur
+# Sankalp Thakur
 
-i run transient labs.
+I build the operating layer where humans and agents turn industrial data into governed action — across **SCADA, PLCs, OPC UA, ERP, MES and PLM** — without crossing the plant safety boundary.
 
-the public work lives in the gap between the plant floor and the rest of the company: industrial ai, energy systems, and agents that have to be auditable near real equipment.
+I run [Transient Labs](https://transientlabs.ai). The public work is about industrial decision AI, energy systems, portable edge inference and agents whose evidence can be audited near real equipment.
 
-scada / plc / opc ua still speak one language.  
-erp / mes / plm speak another.  
-most days the translation is a person copying a number, then joining a call to explain why it changed.  
-we call it process. it is usually just a bug with a salary.
+Controls and operations still speak one language. Enterprise systems speak another. Most days the translation is a person copying a number, then joining a call to explain why it changed. We call it process. It is usually just a bug with a salary.
 
-## what i have shipped
+## Current proof
 
-[transient energy](https://github.com/sankalpsthakur/transient-energy-ems)  
-iso 50001 enms prototype. simulator-backed control path. 49 browser tests.  
-live: [ems](https://transient-energy-ems.onrender.com). some sections still under nda.
+| Artifact | What it demonstrates | Boundary |
+| --- | --- | --- |
+| [Forge](https://forgeagent.onrender.com) | Human-agent collaboration, machine identities, plant telemetry, policy proposals and authenticated approvals | Software-in-the-loop; no claim of commissioned PLC control |
+| [Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems) · [live](https://transient-energy-ems.onrender.com) | ISO 50001 EnMS prototype, simulator-backed control path and 49 browser tests | Synthetic plant scenario |
+| [Pump edge-twin lab](https://huggingface.co/spaces/sankalpsthakur/forge-pump-edge-twin-lab) · [dataset](https://huggingface.co/datasets/sankalpsthakur/forge-pump-digital-twin-synthetic) · [model](https://huggingface.co/sankalpsthakur/forge-pump-surrogate-multiruntime) | 40k-row clean-room digital twin, PyTorch → ONNX/TensorFlow/LiteRT parity and browser ONNX/WASM inference | Read-only PLC/SIS boundary; synthetic data |
+| [Electrolyser telemetry baseline](https://huggingface.co/sankalpsthakur/forge-electrolyser-telemetry-baseline) · [replay scenarios](https://huggingface.co/datasets/sankalpsthakur/forge-industrial-control-scenarios) | Anomaly baselines, replayable telemetry and versioned agent/control traces | Methodology proof, not plant savings evidence |
+| [Carbon](https://github.com/sankalpsthakur/carbon) · [npm](https://www.npmjs.com/package/@sankalpsthakur/carbon) | Agent and MCP toolkit for auditable Scope 1/2/3 workflows | Accounting workflow infrastructure, not a finance-grade LCA |
+| [IBM 150-qubit Ising study](https://huggingface.co/datasets/sankalpsthakur/ibm-150q-ising-hardware-results) · [lab](https://huggingface.co/spaces/sankalpsthakur/qaoa-depth-noise-lab) | Hardware execution, depth/noise evidence, mitigation ablation and exact classical comparison | No quantum-advantage claim; classical HiGHS wins this instance |
 
-forge  
-system-of-action demo.  
-live: [forgeagent.onrender.com](https://forgeagent.onrender.com)
+## Open source
 
-[carbon](https://github.com/sankalpsthakur/carbon)  
-agent + mcp toolkit for scope 1/2/3.  
-[@sankalpsthakur/carbon](https://www.npmjs.com/package/@sankalpsthakur/carbon) (0.2.0)
+I contribute fixes and tests upstream across industrial protocols, energy systems, databases, edge runtimes and scientific computing — including pymodbus, opcua-asyncio, FlexMeasures, Electricity Maps, ClickHouse, Home Assistant, ExecuTorch, Qiskit and PennyLane.
 
-[scope 3 calculation](https://github.com/sankalpsthakur/scope3-calculation)  
-the local mvp behind it. baseline inventory. not finance-grade lca.
+[Browse merged contributions →](https://github.com/pulls?q=is%3Apr+author%3Asankalpsthakur+is%3Amerged)
 
-## still cooking
+## Public activity
 
-[scope 3 strategy](https://github.com/sankalpsthakur/scope3-strategy) — csrd double-materiality / lca → esrs  
-[plantopsbench](https://github.com/sankalpsthakur/plantopsbench) — stub inspect ai evals for plant-ops decisions  
-[plugins](https://github.com/sankalpsthakur/plugins) — claude plugins for scope 3 + delivery
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-activity-graph.vercel.app/graph?username=sankalpsthakur&hide_border=true&area=true&bg_color=00000000&color=c9d1d9&line=58a6ff&point=f0f6fc&area_color=1f6feb&custom_title=Public%20contribution%20activity">
+  <img alt="Sankalp Thakur's live public contribution activity" src="https://github-readme-activity-graph.vercel.app/graph?username=sankalpsthakur&hide_border=true&area=true&bg_color=00000000&color=24292f&line=0969da&point=1f2328&area_color=54aeff&custom_title=Public%20contribution%20activity">
+</picture>
 
-## how things connect
+## How the work connects
 
-a few years ago a [simple poker simulation](https://x.com/sankalpsthakur/status/1888895644628087220) showed something obvious once you see it: any predictable strategy loses under imperfect information.  
-that note grew into [games](https://github.com/sankalpsthakur/games) eighteen game-theoretic environments that keep testing the same idea with a wider harness.
+Meters are disputed. Spreadsheets outlive their authors. Finance, controls and operations rarely agree on one baseline. Decarbonisation stays a PDF until those systems can share the same state, constraints and audit trail.
 
-the same lesson shows up on the plant floor.  
-meters that nobody fully trusts. spreadsheets built by someone who left in 2022. finance, controls, and operations that rarely agree on one baseline.  
-decarbonisation stays a pdf until those three can share the same numbers and the same control loop.
+The production path stays classical and bounded: replay first, verify invariants independently, keep safety in the PLC/SIS, and require an operator before any consequential action. ONNX, TensorFlow, PyTorch, CUDA and quantum accelerators are implementation choices behind that contract — not reasons to weaken it.
 
-i have contributed to pymodbus, opcua-asyncio, flexmeasures, and electricitymaps-contrib. the quiet libraries that keep the lights talking to the models.
+## Find me
 
-## classical ↔ quantum
-
-energy flexibility and intervention choice are binary optimisation problems.  
-mip runs in production today. the same qubo can be handed to qiskit qaoa on ibm runtime for a side-by-side look.  
-classical stays the production path. quantum is just another solver behind the same interface.  
-exploring the bridge. not claiming advantage.
-
-## experiments that still interest me:
-
-- small flexmeasures-style storage schedule as qubo: gurobi/cbc vs qaoa (objective gap + wall time)
-- transient energy opportunity portfolio under budget and interlocks — same harness
-- carbon-intensity-aware load shift (electricity maps style signals) as discount/shift qubo
-- keep plantopsbench, the agents, and the ot i/o classical; only swap the optimiser when the decision is combinatorial
-
-the work is ordinary in the best sense.  
-
-## find me
-
-[x](https://x.com/sankalpsthakur) · [linkedin](https://www.linkedin.com/in/sankalpthakur/) · [kaggle](https://www.kaggle.com/sankalpsthakur) · [transient labs](https://transientlabs.ai)
+[Hugging Face](https://huggingface.co/sankalpsthakur) · [Kaggle](https://www.kaggle.com/sankalpsthakur) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [X](https://x.com/sankalpsthakur) · [Transient Labs](https://transientlabs.ai)
