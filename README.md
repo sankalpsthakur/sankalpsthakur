@@ -1,14 +1,14 @@
 # Sankalp Thakur
 
-I build the operating layer where humans and agents turn industrial data into governed action — across **SCADA, PLCs, OPC UA, ERP, MES and PLM** — without crossing the plant safety boundary.
+I build the operating layer where humans and agents collaborate on industrial data — across **SCADA, PLCs, OPC UA, ERP, MES, MRP, QMS, WMS and PLM** — within the plant safety boundary.
 
 I run [Transient Labs](https://transientlabs.ai). The public work is about industrial decision AI, energy systems, portable edge inference and agents whose evidence can be audited near real equipment.
 
-Controls and operations still speak one language. Enterprise systems speak another. Most days the translation is a person copying a number, then joining a call to explain why it changed. We call it process. It is usually just a bug with a salary.
+Controls and operations still speak one language. Enterprise systems speak another. Most days the translation is a person copying a number, then joining a call to explain why it changed. 
 
 ## Current proof
 
-| Artifact | What it demonstrates | Boundary |
+| Project | What it demonstrates | Boundary |
 | --- | --- | --- |
 | [Forge](https://forgeagent.onrender.com) | Human-agent collaboration, machine identities, plant telemetry, policy proposals and authenticated approvals | Software-in-the-loop; no claim of commissioned PLC control |
 | [Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems) · [live](https://transient-energy-ems.onrender.com) | ISO 50001 EnMS prototype, simulator-backed control path and 49 browser tests | Synthetic plant scenario |
@@ -19,7 +19,7 @@ Controls and operations still speak one language. Enterprise systems speak anoth
 
 ## Open source
 
-I contribute fixes and tests upstream across industrial protocols, energy systems, databases, edge runtimes and scientific computing — including pymodbus, opcua-asyncio, FlexMeasures, Electricity Maps, ClickHouse, Home Assistant, ExecuTorch, Qiskit and PennyLane.
+I have contributed fixes upstream across industrial protocols, energy systems, databases, edge runtimes and scientific computing — including pymodbus, opcua-asyncio, FlexMeasures, Electricity Maps, ClickHouse, Home Assistant, ExecuTorch, Qiskit and PennyLane.
 
 [Browse merged contributions →](https://github.com/pulls?q=is%3Apr+author%3Asankalpsthakur+is%3Amerged)
 
@@ -32,9 +32,9 @@ I contribute fixes and tests upstream across industrial protocols, energy system
 
 ## How the work connects
 
-Meters are disputed. Spreadsheets outlive their authors. Finance, controls and operations rarely agree on one baseline. Decarbonisation stays a PDF until those systems can share the same state, constraints and audit trail.
+Meters are disputed. Spreadsheets outlive their authors. Finance, controls and operations rarely agree on one baseline. This is an attempt to build the factory operating system
 
-The production path stays classical and bounded: replay first, verify invariants independently, keep safety in the PLC/SIS, and require an operator before any consequential action. ONNX, TensorFlow, PyTorch, CUDA and quantum accelerators are implementation choices behind that contract — not reasons to weaken it.
+The production path stays classical and bounded: replay first, verify invariants independently, keep safety in the PLC/SIS, and require an operator before any consequential action. ONNX, TensorFlow, PyTorch, CUDA and quantum accelerators are implementation choices behind that.
 
 ## Find me
 
