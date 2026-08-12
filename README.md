@@ -26,10 +26,10 @@ Live GitHub queries, not hand-maintained numbers. Repositories with merged work:
 
 | Domain | Upstream |
 | --- | --- |
-| Industrial protocols, SCADA, MES | [pymodbus](https://github.com/pymodbus-dev/pymodbus) · [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio) · [FUXA](https://github.com/frangoteam/FUXA) · [OpenMes](https://github.com/Mes-Open/OpenMes) · [thin-edge.io](https://github.com/thin-edge/thin-edge.io) |
+| Industrial protocols, SCADA, MES | [pymodbus](https://github.com/pymodbus-dev/pymodbus) · [opcua-asyncio](https://github.com/FreeOpcUa/opcua-asyncio) · [FUXA](https://github.com/frangoteam/FUXA) · [OpenMes](https://github.com/Mes-Open/OpenMes) · [thin-edge.io](https://github.com/thin-edge/thin-edge.io) · [crbnos/carbon](https://github.com/crbnos/carbon) |
 | Energy and climate | [FlexMeasures](https://github.com/FlexMeasures/flexmeasures) · [Electricity Maps](https://github.com/electricitymaps/electricitymaps-contrib) · [CodeCarbon](https://github.com/mlco2/codecarbon) · [Home Assistant](https://github.com/home-assistant/core) |
 | Data infrastructure | [clickhouse-connect](https://github.com/ClickHouse/clickhouse-connect) · [dbt-clickhouse](https://github.com/ClickHouse/dbt-clickhouse) · [mcp-clickhouse](https://github.com/ClickHouse/mcp-clickhouse) · [clickhouse-go](https://github.com/ClickHouse/clickhouse-go) · [influxdb-client-python](https://github.com/influxdata/influxdb-client-python) · [kagglehub](https://github.com/Kaggle/kagglehub) |
-| Formal methods, quantum | [Lean 4](https://github.com/leanprover/lean4) · [physlib](https://github.com/leanprover-community/physlib) · [Mitiq](https://github.com/unitaryfoundation/mitiq) · [Cirq](https://github.com/quantumlib/Cirq) |
+| Formal methods, quantum, ML | [Lean 4](https://github.com/leanprover/lean4) · [physlib](https://github.com/leanprover-community/physlib) · [Mitiq](https://github.com/unitaryfoundation/mitiq) · [Cirq](https://github.com/quantumlib/Cirq) · [TensorFlow](https://github.com/tensorflow/tensorflow) |
 | Platform, tooling | [Svelte](https://github.com/sveltejs/svelte) · [coreutils](https://github.com/uutils/coreutils) · [LeaderWorkerSet](https://github.com/kubernetes-sigs/lws) · [quicklink](https://github.com/GoogleChromeLabs/quicklink) · [docker-library/docs](https://github.com/docker-library/docs) |
 
 ## Public activity
