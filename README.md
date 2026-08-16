@@ -1,5 +1,7 @@
 # Sankalp Thakur
 
+i build software for systems that touch the physical world.
+
 building the operating layer(factoryOS) where humans and agents collaborate around factory operations on industrial data {SCADA, PLCs, OPC UA, ERP, MES, MRP, QMS, WMS, PLM}. control systems and enterprise systems speak different languages. today the translation is still often a person copying a number, then joining a call to explain why
 
 [Transient Labs](https://transientlabs.ai) — industrial decision AI, energy systems, portable edge inference, and agents whose evidence can be audited near real equipment.
@@ -12,7 +14,7 @@ building the operating layer(factoryOS) where humans and agents collaborate arou
 | Forge · [live](https://forgeagent.onrender.com) | Human-agent collaboration, machine identities, plant telemetry, policy proposals, authenticated approvals | Software-in-the-loop; no commissioned PLC control |
 | [Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems) · [live](https://transient-energy-ems.onrender.com) | energy-management system {ISO 50001}, simulator-backed control path, 49-test browser harness | Synthetic plant scenario |
 | [Pump edge-twin lab](https://huggingface.co/spaces/sankalpsthakur/forge-pump-edge-twin-lab) · [dataset](https://huggingface.co/datasets/sankalpsthakur/forge-pump-digital-twin-synthetic) · [model](https://huggingface.co/sankalpsthakur/forge-pump-surrogate-multiruntime) | 40k-row clean-room twin, browser inference across {PyTorch, ONNX, TensorFlow, LiteRT} | Read-only {PLC, SIS} boundary; synthetic data |
-| [Electrolyser baseline](https://huggingface.co/sankalpsthakur/forge-electrolyser-telemetry-baseline) · [replay scenarios](https://huggingface.co/datasets/sankalpsthakur/forge-industrial-control-scenarios) | Anomaly baselines, replayable telemetry, versioned agent/control traces | Methodology proof, not plant savings evidence |
+| [Electrolyser baseline](https://huggingface.co/spaces/sankalpsthakur/forge-electrolyser-telemetry-baseline) · [replay scenarios](https://huggingface.co/datasets/sankalpsthakur/forge-industrial-control-scenarios) | Anomaly baselines, replayable telemetry, versioned agent/control traces | Methodology proof, not plant savings evidence |
 | [Carbon](https://github.com/sankalpsthakur/carbon) · [npm](https://www.npmjs.com/package/@sankalpsthakur/carbon) | Agent and MCP toolkit for auditable Scope 1/2/3 workflows | Workflow infrastructure, not finance-grade LCA |
 | [Game theory simulations](https://github.com/sankalpsthakur/games) | 18 games × {PPO, A2C, DQN}, 30-seed evaluation, behavioral-signal/tell sensitivity | Deterministic synthetic environments; not evidence about real human behaviour |
 | [IBM 150-variable Ising study](https://github.com/sankalpsthakur/ibm-quantum-150q-ising) · [results](https://huggingface.co/datasets/sankalpsthakur/ibm-150q-ising-hardware-results) · [lab](https://huggingface.co/spaces/sankalpsthakur/qaoa-depth-noise-lab) | 15 jobs, 599 quantum seconds on IBM Heron, depth/noise evidence, mitigation ablation, exact classical baseline | No quantum-advantage claim; classical HiGHS wins this instance |
