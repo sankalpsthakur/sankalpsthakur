@@ -1,12 +1,12 @@
 # Sankalp Thakur
 
-I build the operating layer where humans and agents collaborate on industrial data — **SCADA, PLCs, OPC UA, ERP, MES, MRP, QMS, WMS, PLM** — inside the plant safety boundary. Controls and enterprise systems still speak different languages. Most days the translation is a person copying a number, then joining a call to explain why it changed.
+building the operating layer(factoryOS) where humans and agents collaborate for factory operations on industrial data — **SCADA, PLCs, OPC UA, ERP, MES, MRP, QMS, WMS, PLM** within safety boundaries and interlocks. control systems(ignition) and enterprise systems(ERP etc) speak different languages. & this translation is a person copying a number, then joining a call to explain why
 
 [Transient Labs](https://transientlabs.ai) — industrial decision AI, energy systems, portable edge inference, and agents whose evidence can be audited near real equipment.
 
-## Current proof
+## Projects
 
-| Project | Demonstrates | Boundary |
+| Project | Functionality | Bounds |
 | --- | --- | --- |
 | Forge · [live](https://forgeagent.onrender.com) | Human-agent collaboration, machine identities, plant telemetry, policy proposals, authenticated approvals | Software-in-the-loop; no commissioned PLC control |
 | [Transient Energy](https://github.com/sankalpsthakur/transient-energy-ems) · [live](https://transient-energy-ems.onrender.com) | ISO 50001 EnMS, simulator-backed control path, 49-test browser harness | Synthetic plant scenario |
@@ -15,14 +15,14 @@ I build the operating layer where humans and agents collaborate on industrial da
 | [Carbon](https://github.com/sankalpsthakur/carbon) · [npm](https://www.npmjs.com/package/@sankalpsthakur/carbon) | Agent and MCP toolkit for auditable Scope 1/2/3 workflows | Workflow infrastructure, not finance-grade LCA |
 | [IBM 150-variable Ising study](https://github.com/sankalpsthakur/ibm-quantum-150q-ising) · [results](https://huggingface.co/datasets/sankalpsthakur/ibm-150q-ising-hardware-results) · [lab](https://huggingface.co/spaces/sankalpsthakur/qaoa-depth-noise-lab) | 15 jobs, 599 quantum seconds on IBM Heron, depth/noise evidence, mitigation ablation, exact classical baseline | No quantum-advantage claim; classical HiGHS wins this instance |
 
-Render demos sleep when idle; first load can take a minute.
+render demos sleep when idle; first load can take a minute.
 
 ## Open source
 
 [![upstream merged PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Dtype%3Apr%2Bauthor%3Asankalpsthakur%2Bis%3Amerged%2B-user%3Asankalpsthakur&query=%24.total_count&label=upstream%20merged%20PRs&color=1f6feb&style=flat-square&cacheSeconds=3600)](https://github.com/search?q=is%3Apr+author%3Asankalpsthakur+is%3Amerged+-user%3Asankalpsthakur&type=pullrequests)
 
 
-Live GitHub queries, not hand-maintained numbers. Repositories with merged work:
+repositories with merged contributions:
 
 | Domain | Upstream |
 | --- | --- |
@@ -39,12 +39,12 @@ Live GitHub queries, not hand-maintained numbers. Repositories with merged work:
   <img alt="Sankalp Thakur's live public contribution activity" src="https://github-readme-activity-graph.vercel.app/graph?username=sankalpsthakur&hide_border=true&area=true&bg_color=00000000&color=24292f&line=0969da&point=1f2328&area_color=54aeff&custom_title=Public%20contribution%20activity">
 </picture>
 
-## How the work connects
+## How everything connects
 
-Meters are disputed. Spreadsheets outlive their authors. Finance, controls and operations rarely agree on one baseline. This is an attempt to build the factory operating system.
+meter data is conflicted, faults propogate through subsystems, spreadsheets outlive their authors. finance, controls and operations rarely agree. this is an attempt to build the factory operating system.
 
-The path stays classical and bounded: replay first, verify invariants independently, keep safety in the PLC/SIS, require an operator before any consequential action. ONNX, TensorFlow, PyTorch, CUDA and quantum accelerators are implementation details behind that.
+the path is classical and bounded: replay first, verify invariants independently, keep safety in the PLC/SIS, require an operator before any consequential action. ONNX, TensorFlow, PyTorch, CUDA and quantum accelerators are implementation details of remote simulations behind that.
 
-## Find me
+## Reach out/Find me
 
 [Hugging Face](https://huggingface.co/sankalpsthakur) · [Kaggle](https://www.kaggle.com/sankalpsthakur) · [LinkedIn](https://www.linkedin.com/in/sankalpthakur/) · [X](https://x.com/sankalpsthakur) · [Transient Labs](https://transientlabs.ai)
