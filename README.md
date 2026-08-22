@@ -10,7 +10,7 @@ At Transient Labs, we have two bounded engagements. a six-week product sprint: i
 
 the same join fails upstream.
 
-[![upstream merged PRs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Dtype%3Apr%2Bauthor%3Asankalpsthakur%2Bis%3Amerged%2B-user%3Asankalpsthakur&query=%24.total_count&label=upstream%20merged%20PRs&color=1f6feb&style=flat-square&cacheSeconds=3600)](https://github.com/search?q=is%3Apr+author%3Asankalpsthakur+is%3Amerged+-user%3Asankalpsthakur&type=pullrequests)
+[![upstream merged PRs](https://gist.githubusercontent.com/sankalpsthakur/9cded476f436ff505a842e1f9293c4ae/raw/upstream-merged-prs.svg)](https://github.com/search?q=is%3Apr+author%3Asankalpsthakur+is%3Amerged+-user%3Asankalpsthakur&type=pullrequests)
 
 transientlabs.ai · sankalp@transientlabs.ai · huggingface.co/sankalpsthakur · x.com/sankalpsthakur · kaggle.com/sankalpsthakur
 

@@ -1,0 +1,30 @@
+name: Update upstream merged PRs badge
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # daily 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get count
+        id: count
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COUNT=$(gh api "search/issues?q=type:pr+author:sankalpsthakur+is:merged+-user:sankalpsthakur" --jq '.total_count')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Upstream merged PRs: $COUNT"
+
+      - name: Generate pure SVG badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 9cded476f436ff505a842e1f9293c4ae
+          filename: upstream-merged-prs.svg
+          label: upstream merged PRs
+          message: ${{ steps.count.outputs.count }}
+          color: "1f6feb"
+          style: flat-square
