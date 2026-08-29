@@ -2,19 +2,29 @@ name: Update upstream merged PRs badge
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # daily 06:00 UTC
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Get count
         id: count
+        # GITHUB_TOKEN is repo-scoped and undercounts author-wide search
+        # (wrote 81 on 2026-08-28 while GraphQL issueCount was already higher).
+        # GIST_SECRET is a user PAT, so public search matches the profile query.
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GIST_SECRET }}
         run: |
-          COUNT=$(gh api "search/issues?q=type:pr+author:sankalpsthakur+is:merged+-user:sankalpsthakur" --jq '.total_count')
+          set -euo pipefail
+          COUNT=$(gh api graphql -f query='query { search(query: "author:sankalpsthakur is:pr is:merged -user:sankalpsthakur", type: ISSUE, first: 1) { issueCount } }' --jq '.data.search.issueCount')
+          if ! [[ "$COUNT" =~ ^[1-9][0-9]*$ ]]; then
+            echo "search returned a non-count: ${COUNT}" >&2
+            exit 1
+          fi
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           echo "Upstream merged PRs: $COUNT"
 
