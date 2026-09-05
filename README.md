@@ -2,6 +2,8 @@
 
 building the autonomous factory control & operating system.
 
+At Tecnicas Reunidas I lead the Digital Solutions Architecture with ADNOC Lower/Upper Zakum facility autonomous offshore operations. 
+
 At Transient Labs, we have two bounded engagements. a six-week product sprint: interface, full-stack, AI, evals, guardrails, production handoff. a four-week industrial energy and automation engagement: site-bounded baseline, opportunity register, control architecture, investable roadmap. book a free discovery 
 
 the same join fails upstream.
