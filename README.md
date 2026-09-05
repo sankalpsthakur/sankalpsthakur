@@ -1,10 +1,6 @@
 # Sankalp Thakur
 
-control systems and enterprise systems are typically disjoint and today the translation is still often a person copying a number, then joining a call to explain why. at times meter data is conflicted, faults propagate through subsystems, spreadsheets outlive their authors && finance, controls and operations rarely agree.
-
-this is an attempt to build the factory operating system. the path is classical and bounded: replay first, verify invariants independently, keep safety in {PLC, SIS}, require an operator before any consequential action. implementation details stay behind that boundary. ERP CRM SCADA MES MRP WMS OPCUA etc acronyms consolidated 
-
-
+building the autonomous factory control & operating system.
 
 At Transient Labs, we have two bounded engagements. a six-week product sprint: interface, full-stack, AI, evals, guardrails, production handoff. a four-week industrial energy and automation engagement: site-bounded baseline, opportunity register, control architecture, investable roadmap. book a free discovery 
 
