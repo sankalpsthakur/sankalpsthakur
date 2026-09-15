@@ -1,4 +1,4 @@
-name: Update upstream merged PRs badge
+name: Update accepted upstream contributions badge
 
 on:
   schedule:
@@ -11,6 +11,9 @@ jobs:
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v4
+      - name: Test counting rules
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Get count
         id: count
         # GITHUB_TOKEN is repo-scoped and undercounts author-wide search
@@ -20,13 +23,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GIST_SECRET }}
         run: |
           set -euo pipefail
-          COUNT=$(gh api graphql -f query='query { search(query: "author:sankalpsthakur is:pr is:merged -user:sankalpsthakur", type: ISSUE, first: 1) { issueCount } }' --jq '.data.search.issueCount')
-          if ! [[ "$COUNT" =~ ^[1-9][0-9]*$ ]]; then
-            echo "search returned a non-count: ${COUNT}" >&2
-            exit 1
-          fi
-          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-          echo "Upstream merged PRs: $COUNT"
+          python3 scripts/count_upstream.py
 
       - name: Generate pure SVG badge
         uses: schneegans/dynamic-badges-action@v1.7.0
@@ -34,7 +31,7 @@ jobs:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 9cded476f436ff505a842e1f9293c4ae
           filename: upstream-merged-prs.svg
-          label: upstream merged PRs
+          label: accepted upstream contributions
           message: ${{ steps.count.outputs.count }}
           color: "1f6feb"
           style: flat-square
