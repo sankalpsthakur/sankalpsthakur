@@ -1,16 +1,15 @@
 # Accepted upstream contributions
 
-The profile badge counts [merged external upstream PRs](https://github.com/search?q=is%3Apr+author%3Asankalpsthakur+is%3Amerged+-user%3Asankalpsthakur&type=pullrequests), plus verified contributions landed outside GitHub's PR merge mechanism.
+The profile badge counts [merged public external upstream PRs](https://github.com/search?q=is%3Apr+is%3Apublic+author%3Asankalpsthakur+is%3Amerged+-user%3Asankalpsthakur&type=pullrequests), plus verified contributions landed outside GitHub's PR merge mechanism. Private targets are excluded even when the workflow token can access them.
 
 Some projects land commits directly or through their own merge bots, then close the PR. GitHub's `is:merged` search excludes these even though the changes and author credit are on the upstream default branch.
 
-## Verified additional landings
+## Automatic discovery
 
-| PR | Landed commit |
-| --- | --- |
-| [Node.js #65116](https://github.com/nodejs/node/pull/65116) | [0e32ee21149c](https://github.com/nodejs/node/commit/0e32ee21149ca4955fce7b377fa70cef90c9dfc2) |
-| [mathlib #42354](https://github.com/leanprover-community/mathlib4/pull/42354) | [ecd2edf95073](https://github.com/leanprover-community/mathlib4/commit/ecd2edf95073c8344529cfb2225390972c0bc945) |
+There is no maintained list of special-case PRs. Every six hours the workflow paginates my complete closed/merged PR history, excluding personal and private targets. For each closed-unmerged external PR it searches upstream commits and reads the PR timeline to discover candidate landing commits.
 
-The workflow runs every six hours. Each recorded landing is checked live for an external target, my PR authorship, closed status, a commit attributed to my GitHub account referencing that PR, and commit ancestry on the upstream default branch. Duplicate PR entries are counted once. If GitHub later marks a recorded PR merged, it is excluded from the supplemental count. Failed verification stops the update rather than publishing an unverified number.
+Candidates must be attributed to my GitHub account, reference that PR using a landing convention (a `PR-URL` trailer, `(#number)` subject suffix, or merge-PR subject), and be ancestors of the upstream default-branch tip captured during the scan. Incidental issue mentions, revert subjects, missing attribution, and commits only on contributor branches are not accepted. One PR counts once even when it has several landing commits. Merged PRs are counted directly and never enter supplemental discovery.
 
-This is a curated, evidence-backed supplement—not a claim to automatically discover every manually landed contribution. The [machine-readable ledger](./upstream-landings.json) and [counting code](./scripts/count_upstream.py) are public. Open, rejected, or simply closed PRs without verified landings do not count. Personal target repositories are excluded.
+The [latest evidence](https://gist.github.com/sankalpsthakur/9cded476f436ff505a842e1f9293c4ae) records merged PR URLs, verified landing commits and branch tips, plus unverified closed PRs and rejected candidate reasons. It is generated automatically and updated together with the badge. Each successful workflow also retains an evidence artifact. The [counting code](./scripts/count_upstream.py) and tests are public.
+
+This is conservative automatic discovery, not a guarantee that every landing can be recognized: GitHub commit-search indexing can lag, and projects may omit references or preserve credit only in a form GitHub cannot link. Such cases remain uncounted and are retried on every full scan. API errors, incomplete search results, search-cap overflow, or broken pagination stop publication; the previous badge and evidence remain available with their previous timestamp. Future accepted PRs matching these verification rules require no manual code or ledger changes. This historical acceptance count does not claim a contribution is still unreverted today.

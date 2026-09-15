@@ -5,33 +5,30 @@ on:
     - cron: "17 */6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: upstream-contribution-badge
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Test counting rules
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
-      - name: Get count
-        id: count
-        # GITHUB_TOKEN is repo-scoped and undercounts author-wide search
-        # (wrote 81 on 2026-08-28 while GraphQL issueCount was already higher).
-        # GIST_SECRET is a user PAT, so public search matches the profile query.
+      - name: Discover, verify and publish count with evidence
+        # Use the user PAT for author-wide discovery and the existing gist update.
+        # Private repositories are explicitly excluded by the inventory filter.
         env:
           GH_TOKEN: ${{ secrets.GIST_SECRET }}
         run: |
           set -euo pipefail
-          python3 scripts/count_upstream.py
-
-      - name: Generate pure SVG badge
-        uses: schneegans/dynamic-badges-action@v1.7.0
+          python3 scripts/count_upstream.py --output "$RUNNER_TEMP/upstream-contributions.json" --publish
+      - name: Retain scan evidence
+        uses: actions/upload-artifact@v4
         with:
-          auth: ${{ secrets.GIST_SECRET }}
-          gistID: 9cded476f436ff505a842e1f9293c4ae
-          filename: upstream-merged-prs.svg
-          label: accepted upstream contributions
-          message: ${{ steps.count.outputs.count }}
-          color: "1f6feb"
-          style: flat-square
+          name: upstream-contributions
+          path: ${{ runner.temp }}/upstream-contributions.json
