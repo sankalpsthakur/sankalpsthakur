@@ -86,40 +86,154 @@ def landing_reference(message, repo, number):
 
 def search_candidates(repo, number, request=api):
     found = set()
+    # Names/trailers are discovery hints only; acceptance requires linked identity.
+    for query in [f'repo:{repo} author:{USER} "{number}"',
+                  f'repo:{repo} "{number}" "Co-authored-by" "Sankalp Thakur"']:
+        page = 1
+        while True:
+            data = request("search/commits", q=query, per_page=100, page=page)
+            if data.get("incomplete_results") or data["total_count"] > 1000:
+                raise RuntimeError(f"Incomplete commit discovery for {repo}#{number}")
+            found.update(item["sha"] for item in data["items"])
+            if page * 100 >= data["total_count"]:
+                break
+            if not data["items"]:
+                raise RuntimeError("Commit pagination ended early")
+            page += 1
+    return found
+
+
+def timeline_events(repo, number, request=api):
+    found = []
     page = 1
     while True:
-        data = request("search/commits", q=f'repo:{repo} author:{USER} "{number}"', per_page=100, page=page)
-        if data.get("incomplete_results") or data["total_count"] > 1000:
-            raise RuntimeError(f"Incomplete commit discovery for {repo}#{number}")
-        found.update(item["sha"] for item in data["items"])
-        if page * 100 >= data["total_count"]:
+        events = request(f"repos/{repo}/issues/{number}/timeline", per_page=100, page=page)
+        found.extend(events)
+        if len(events) < 100:
             return found
-        if not data["items"]:
-            raise RuntimeError("Commit pagination ended early")
         page += 1
 
 
 def timeline_candidates(repo, number, request=api):
-    found = set()
-    page = 1
-    while True:
-        events = request(f"repos/{repo}/issues/{number}/timeline", per_page=100, page=page)
-        for event in events:
-            sha = event.get("commit_id")
-            if sha and re.fullmatch(r"[0-9a-f]{40}", sha):
-                found.add(sha)
-        if len(events) < 100:
-            return found
-        page += 1
+    return {event["commit_id"] for event in timeline_events(repo, number, request)
+            if re.fullmatch(r"[0-9a-f]{40}", event.get("commit_id") or "")}
+
+
+def credited_commit(repo, sha, request=api):
+    """Use GitHub-linked authors, not an arbitrary name/email in a trailer."""
+    owner, name = repo.split("/")
+    query = f'''query {{ repository(owner:{json.dumps(owner)},name:{json.dumps(name)}) {{
+      object(oid:{json.dumps(sha)}) {{ ... on Commit {{ authors(first:100) {{
+        pageInfo {{hasNextPage}} nodes {{user {{login}}}}
+      }} }} }} }} }}'''
+    obj = request("graphql", query=query)["data"]["repository"]["object"]
+    if obj is None:
+        return False
+    authors = obj["authors"]
+    if authors["pageInfo"]["hasNextPage"]:
+        raise RuntimeError("Incomplete commit attribution")
+    return any((node.get("user") or {}).get("login", "").lower() == USER.lower()
+               for node in authors["nodes"])
+
+
+def incorporation(text, original, target_repo):
+    """Explicit incorporation only; fixes/related/supersedes alone do not qualify."""
+    text = re.sub(r"<!--.*?-->", "", text or "", flags=re.S)
+    references = [re.escape(original["url"])]
+    source_repo = original["repository"]["nameWithOwner"]
+    references.append(re.escape(f"{source_repo}#{original['number']}"))
+    if source_repo.lower() == target_repo.lower():
+        references.append(rf"(?<![\w/])#{original['number']}(?!\d)")
+    ref = "(?:" + "|".join(references) + ")"
+    strong = rf"(?:brings? in (?:the )?substance of|incorporat(?:es|ed|ing) (?:all |the )?(?:changes|fix|patch)(?: from| of)?|migrated from)\s*:?\s*{ref}"
+    # Keep the linkage within one paragraph, and require an actual reuse verb.
+    reuse = r"cherry[ -]?pick(?:ed|ing)?|rebased? (?:commits|changes)|migrated"
+    return bool(re.search(strong, text, re.I) or any(
+        re.search(ref, paragraph, re.I) and re.search(reuse, paragraph, re.I)
+        for paragraph in re.split(r"\n\s*\n", text)))
+
+
+def replacement_landings(pr, events, request=api):
+    """Follow linked replacement PRs across repositories, without a ledger."""
+    urls = set()
+    for event in events:
+        issue = (event.get("source") or {}).get("issue") or {}
+        if event.get("event") == "cross-referenced" and issue.get("pull_request"):
+            url = issue.get("html_url", "")
+            if re.fullmatch(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+", url):
+                urls.add(url)
+    accepted = []
+    for url in sorted(urls):
+        owner, name, _, number = url.removeprefix("https://github.com/").split("/")
+        repo = f"{owner}/{name}"
+        if owner.lower() == USER.lower():
+            continue
+        replacement = request(f"repos/{repo}/pulls/{number}")
+        if not replacement.get("merged_at") or replacement.get("state") != "closed":
+            continue
+        target = replacement["base"]["repo"]
+        if target["private"] or target.get("fork") or target["full_name"].lower() != repo.lower():
+            continue
+        commits, page = [], 1
+        while True:
+            part = request(f"repos/{repo}/pulls/{number}/commits", per_page=100, page=page)
+            commits.extend(part)
+            if len(part) < 100:
+                break
+            page += 1
+        # GitHub caps this endpoint at 250 commits. Never treat that as complete.
+        if replacement.get("commits", len(commits)) != len(commits) or len(commits) >= 250:
+            raise RuntimeError(f"Incomplete replacement commits: {url}")
+        body = replacement.get("body") or ""
+        explicit = incorporation(body, pr, repo)
+        credited = []
+        for commit in commits:
+            message = commit["commit"]["message"]
+            linked = incorporation(message, pr, repo) or explicit
+            if not linked:
+                continue
+            primary = (commit.get("author") or {}).get("login", "")
+            if primary.lower() == USER.lower() or credited_commit(repo, commit["sha"], request):
+                credited.append(commit["sha"])
+        # A human upstream author's explicit statement of inclusion also counts,
+        # separately labelled: it is not falsely represented as Git authorship.
+        human = (replacement.get("user") or {}).get("type") == "User"
+        if not credited and not (explicit and human):
+            continue
+        sha = replacement["merge_commit_sha"]
+        target = request(f"repos/{repo}")
+        tip = request(f"repos/{repo}/commits/{quote(target['default_branch'], safe='')}")["sha"]
+        comparison = request(f"repos/{repo}/compare/{sha}...{tip}")
+        if comparison["status"] not in ("ahead", "identical") or comparison["behind_by"] != 0:
+            continue
+        # A source PR commit alone is insufficient: squash can discard its
+        # authorship. Require final coauthor credit or preserved commit ancestry.
+        preserved = []
+        if credited:
+            if credited_commit(repo, sha, request):
+                preserved = [sha]
+            else:
+                for credit_sha in credited:
+                    check = request(f"repos/{repo}/compare/{credit_sha}...{tip}")
+                    if check["status"] in ("ahead", "identical") and check["behind_by"] == 0:
+                        preserved.append(credit_sha)
+        if not preserved and not (explicit and human):
+            continue
+        accepted.append({"sha": sha, "url": f"https://github.com/{repo}/commit/{sha}",
+                         "landing_pr": url, "merged_at": replacement["merged_at"],
+                         "attribution": "git_authorship" if preserved else "upstream_acknowledgment",
+                         "credited_commits": preserved, "verified_against": tip,
+                         "evidence_url": url})
+    return accepted
 
 
 def discover(pr, request=api):
     repo = pr["repository"]["nameWithOwner"]
     number = pr["number"]
     branch = pr["repository"]["defaultBranchRef"]
-    if branch is None:
-        return {"pr": pr["url"], "reason": "no_default_branch", "commits": []}
-    candidates = search_candidates(repo, number, request) | timeline_candidates(repo, number, request)
+    events = timeline_events(repo, number, request)
+    candidates = (search_candidates(repo, number, request) | {
+        e["commit_id"] for e in events if re.fullmatch(r"[0-9a-f]{40}", e.get("commit_id") or "")}) if branch else set()
     accepted = []
     rejected = []
     for sha in sorted(candidates):
@@ -131,7 +245,10 @@ def discover(pr, request=api):
                 continue
             raise
         author = (commit.get("author") or {}).get("login", "")
-        if commit["sha"] != sha or author.lower() != USER.lower() or not landing_reference(commit["commit"]["message"], repo, number):
+        message = commit["commit"]["message"]
+        if commit["sha"] != sha or not landing_reference(message, repo, number) or (
+            author.lower() != USER.lower() and not credited_commit(repo, sha, request)
+        ):
             rejected.append({"commit": sha, "reason": "no_author_or_landing_reference"})
             continue
         try:
@@ -144,10 +261,13 @@ def discover(pr, request=api):
         if comparison["status"] not in ("ahead", "identical") or comparison["behind_by"] != 0:
             rejected.append({"commit": sha, "reason": "not_on_default_branch"})
             continue
-        accepted.append({"sha": sha, "url": commit["html_url"], "author": author})
+        accepted.append({"sha": sha, "url": commit["html_url"], "author": author,
+                         "attribution": "git_authorship"})
+    accepted.extend(replacement_landings(pr, events, request))
     return {
         "pr": pr["url"], "repository": repo, "number": number,
-        "default_branch": branch["name"], "verified_against": branch["target"]["oid"],
+        "default_branch": branch["name"] if branch else None,
+        "verified_against": branch["target"]["oid"] if branch else None,
         "commits": accepted, "reason": "verified_landing" if accepted else "no_verified_landing",
         "rejected_candidates": rejected,
     }
@@ -156,6 +276,7 @@ def discover(pr, request=api):
 def count(prs, request=api):
     merged, supplemental, unresolved = [], [], []
     seen = set()
+    landing_prs = {p["url"].lower() for p in prs if p["state"] == "MERGED" and p["mergedAt"]}
     for index, pr in enumerate(prs, 1):
         key = pr["url"].lower()
         if key in seen:
@@ -166,12 +287,20 @@ def count(prs, request=api):
         elif pr["state"] == "CLOSED" and not pr["mergedAt"]:
             print(f"Verifying {index}/{len(prs)}: {pr['url']}", file=sys.stderr, flush=True)
             evidence = discover(pr, request)
+            evidence["commits"] = [c for c in evidence["commits"]
+                                   if c.get("landing_pr", "").lower() not in landing_prs]
+            if evidence["commits"]:
+                landing_prs.update(c["landing_pr"].lower() for c in evidence["commits"] if c.get("landing_pr"))
+            elif evidence.get("reason") == "verified_landing":
+                evidence["reason"] = "landing_already_counted"
             (supplemental if evidence["commits"] else unresolved).append(evidence)
         else:
             raise ValueError("Inconsistent PR state")
     return {
-        "schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(),
+        "schema_version": 2, "generated_at": datetime.now(timezone.utc).isoformat(),
         "user": USER, "merged": len(merged), "landed": len(supplemental),
+        "authorship_credited_landings": sum(any(c.get("attribution") == "git_authorship" for c in e["commits"]) for e in supplemental),
+        "acknowledged_incorporations": sum(all(c.get("attribution") == "upstream_acknowledgment" for c in e["commits"]) for e in supplemental),
         "count": len(merged) + len(supplemental), "merged_prs": merged,
         "verified_landings": supplemental, "unverified_closed_prs": unresolved,
     }

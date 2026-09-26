@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from count_upstream import USER, badge, count, discover, inventory, landing_reference, main, publish, search_candidates, timeline_candidates
+from count_upstream import USER, badge, count, discover, inventory, incorporation, landing_reference, main, publish, search_candidates, timeline_candidates
 
 
 def pr(number=42, state="CLOSED"):
@@ -28,11 +28,15 @@ class DiscoveryTests(unittest.TestCase):
         self.events = []
         self.comparison = {"status": "ahead", "behind_by": 0}
         self.calls = []
+        self.coauthors = []
 
     def request(self, endpoint, **fields):
         self.calls.append((endpoint, fields))
         if endpoint == "search/commits":
             return self.search
+        if endpoint == "graphql":
+            return {"data": {"repository": {"object": {"authors": {
+                "pageInfo": {"hasNextPage": False}, "nodes": self.coauthors}}}}}
         if endpoint.endswith("/timeline"):
             return self.events
         if "/commits/" in endpoint:
@@ -78,6 +82,38 @@ class DiscoveryTests(unittest.TestCase):
 
     def test_unlinked_author_not_counted(self):
         self.commit["author"] = None
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_linked_coauthor_on_direct_landing_counts(self):
+        self.commit["author"] = {"login": "maintainer"}
+        self.coauthors = [{"user": {"login": USER}}]
+        self.assertTrue(discover(pr(), self.request)["commits"])
+
+    def test_coauthor_discovery_does_not_require_primary_author_search(self):
+        self.commit["author"] = {"login": "maintainer"}
+        self.coauthors = [{"user": {"login": USER}}]
+        original = self.request
+        def coauthor_only(endpoint, **fields):
+            if endpoint == "search/commits" and "author:" in fields["q"]:
+                return {"incomplete_results": False, "total_count": 0, "items": []}
+            return original(endpoint, **fields)
+        self.assertTrue(discover(pr(), coauthor_only)["commits"])
+
+    def test_incomplete_linked_authors_fail_closed(self):
+        self.commit["author"] = None
+        original = self.request
+        def partial(endpoint, **fields):
+            data = original(endpoint, **fields)
+            if endpoint == "graphql":
+                data["data"]["repository"]["object"]["authors"]["pageInfo"]["hasNextPage"] = True
+            return data
+        with self.assertRaises(RuntimeError):
+            discover(pr(), partial)
+
+    def test_unlinked_coauthor_name_does_not_count(self):
+        self.commit["author"] = None
+        self.coauthors = [{"user": None}]
+        self.commit["commit"]["message"] += "\nCo-authored-by: Sankalp Thakur <unknown@example.com>"
         self.assertFalse(discover(pr(), self.request)["commits"])
 
     def test_incidental_reference_not_counted(self):
@@ -158,6 +194,123 @@ class DiscoveryTests(unittest.TestCase):
 
     def test_badge_contains_total(self):
         self.assertIn("upstream contributions: 98", badge(98))
+
+
+class ReplacementTests(unittest.TestCase):
+    def setUp(self):
+        DiscoveryTests.setUp(self)
+        self.search = {"incomplete_results": False, "total_count": 0, "items": []}
+        self.url = "https://github.com/upstream/project/pull/99"
+        self.events = [{"event": "cross-referenced", "source": {"issue": {
+            "html_url": self.url, "pull_request": {"url": "unused"}}}}]
+        self.replacement = {
+            "state": "closed", "merged_at": "2026-09-20T00:00:00Z",
+            "merge_commit_sha": "c" * 40, "body": "Brings in the substance of #42.",
+            "user": {"login": "maintainer", "type": "User"}, "commits": 1,
+            "base": {"repo": {"private": False, "fork": False, "full_name": "upstream/project"}},
+        }
+        self.commit["commit"]["message"] = "Fix startup"
+        self.commit["author"] = {"login": "maintainer"}
+
+    def request(self, endpoint, **fields):
+        if endpoint.endswith("/pulls/99"):
+            return self.replacement
+        if endpoint.endswith("/pulls/99/commits"):
+            return [self.commit]
+        if endpoint == "repos/upstream/project":
+            return {"default_branch": "main"}
+        if endpoint == "repos/upstream/project/commits/main":
+            return {"sha": "b" * 40}
+        return DiscoveryTests.request(self, endpoint, **fields)
+
+    def test_replacement_coauthor(self):
+        self.replacement["body"] = "We want to merge #42. I cherrypicked commits from that PR."
+        self.coauthors = [{"user": {"login": USER}}]
+        evidence = discover(pr(), self.request)["commits"][0]
+        self.assertEqual(evidence["attribution"], "git_authorship")
+        self.assertEqual(evidence["landing_pr"], self.url)
+
+    def test_discarded_source_authorship_is_not_final_git_credit(self):
+        self.commit["author"] = {"login": USER}
+        original = self.request
+        def discarded(endpoint, **fields):
+            if endpoint.endswith(f"/compare/{self.sha}...{'b' * 40}"):
+                return {"status": "diverged", "behind_by": 1}
+            return original(endpoint, **fields)
+        evidence = discover(pr(), discarded)["commits"][0]
+        self.assertEqual(evidence["attribution"], "upstream_acknowledgment")
+        self.assertEqual(evidence["credited_commits"], [])
+
+    def test_explicit_incorporation_is_labelled_not_git_authorship(self):
+        evidence = discover(pr(), self.request)["commits"][0]
+        self.assertEqual(evidence["attribution"], "upstream_acknowledgment")
+        self.assertEqual(evidence["credited_commits"], [])
+        report = count([pr()], self.request)
+        self.assertEqual((report["authorship_credited_landings"], report["acknowledged_incorporations"]), (0, 1))
+
+    def test_html_template_reference_does_not_establish_incorporation(self):
+        self.replacement["body"] = "<!-- Brings in the substance of #42 -->\nIndependent change"
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_personal_target_not_counted(self):
+        self.events[0]["source"]["issue"]["html_url"] = f"https://github.com/{USER}/project/pull/99"
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_related_supersedes_or_independent_fix_not_counted(self):
+        for body in ["Related to #42", "Closes #42", "Supersedes #42 with an independent fix",
+                     "Our alternate fix for #42", "Brings in the substance of #420"]:
+            self.replacement["body"] = body
+            self.assertFalse(discover(pr(), self.request)["commits"], body)
+
+    def test_open_replacement_not_counted(self):
+        self.replacement["state"] = "open"
+        self.replacement["merged_at"] = None
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_private_or_fork_target_not_counted(self):
+        for field in ["private", "fork"]:
+            self.replacement["base"]["repo"][field] = True
+            self.assertFalse(discover(pr(), self.request)["commits"])
+            self.replacement["base"]["repo"][field] = False
+
+    def test_bot_acknowledgment_without_credit_not_counted(self):
+        self.replacement["user"]["type"] = "Bot"
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_replacement_not_on_default_branch_not_counted(self):
+        self.comparison = {"status": "diverged", "behind_by": 1}
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_incomplete_replacement_commits_fail_closed(self):
+        self.replacement["commits"] = 2
+        with self.assertRaises(RuntimeError):
+            discover(pr(), self.request)
+
+    def test_replacement_already_in_merged_inventory_not_double_counted(self):
+        self.assertEqual(count([pr(), pr(99, "MERGED")], self.request)["count"], 1)
+
+    def test_two_originals_same_replacement_count_once(self):
+        self.replacement["body"] = "Brings in the substance of #42. Brings in the substance of #43."
+        self.assertEqual(count([pr(), pr(43)], self.request)["count"], 1)
+
+    def test_cross_repository_migration(self):
+        original = pr()
+        original["repository"]["nameWithOwner"] = "old/docs"
+        original["url"] = "https://github.com/old/docs/pull/42"
+        self.replacement["body"] = ""
+        self.commit["author"] = {"login": USER}
+        self.commit["commit"]["message"] = f"Document setting\n\nMigrated from: {original['url']}"
+        self.assertEqual(discover(original, self.request)["commits"][0]["attribution"], "git_authorship")
+
+    def test_replacement_survives_empty_original_repository(self):
+        original = pr()
+        original["repository"]["defaultBranchRef"] = None
+        self.assertTrue(discover(original, self.request)["commits"])
+
+    def test_bare_number_does_not_link_other_repository(self):
+        original = pr()
+        original["repository"]["nameWithOwner"] = "old/docs"
+        self.assertFalse(incorporation("Brings in the substance of #42", original, "upstream/project"))
 
 
 class InventoryTests(unittest.TestCase):
