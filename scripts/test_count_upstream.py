@@ -289,6 +289,12 @@ class ReplacementTests(unittest.TestCase):
     def test_replacement_already_in_merged_inventory_not_double_counted(self):
         self.assertEqual(count([pr(), pr(99, "MERGED")], self.request)["count"], 1)
 
+    def test_preserved_direct_commit_in_counted_replacement_not_double_counted(self):
+        self.commit["author"] = {"login": USER}
+        self.commit["commit"]["message"] = "Fix startup (#42)"
+        self.search = {"incomplete_results": False, "total_count": 1, "items": [{"sha": self.sha}]}
+        self.assertEqual(count([pr(), pr(99, "MERGED")], self.request)["count"], 1)
+
     def test_two_originals_same_replacement_count_once(self):
         self.replacement["body"] = "Brings in the substance of #42. Brings in the substance of #43."
         self.assertEqual(count([pr(), pr(43)], self.request)["count"], 1)

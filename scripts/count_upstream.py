@@ -287,8 +287,10 @@ def count(prs, request=api):
         elif pr["state"] == "CLOSED" and not pr["mergedAt"]:
             print(f"Verifying {index}/{len(prs)}: {pr['url']}", file=sys.stderr, flush=True)
             evidence = discover(pr, request)
-            evidence["commits"] = [c for c in evidence["commits"]
-                                   if c.get("landing_pr", "").lower() not in landing_prs]
+            # A preserved source commit and its merged replacement are two
+            # evidence routes for the same contribution, not two contributions.
+            if any(c.get("landing_pr", "").lower() in landing_prs for c in evidence["commits"]):
+                evidence["commits"] = []
             if evidence["commits"]:
                 landing_prs.update(c["landing_pr"].lower() for c in evidence["commits"] if c.get("landing_pr"))
             elif evidence.get("reason") == "verified_landing":
