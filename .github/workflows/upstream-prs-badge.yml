@@ -1,6 +1,13 @@
-name: Update accepted upstream contributions badge
+name: Update upstream contributions badge
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - UPSTREAM-CONTRIBUTIONS.md
+      - scripts/**
+      - .github/workflows/upstream-prs-badge.yml
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:

@@ -157,7 +157,7 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual(len(search_candidates("upstream/project", 42, pages)), 101)
 
     def test_badge_contains_total(self):
-        self.assertIn("accepted upstream contributions: 98", badge(98))
+        self.assertIn("upstream contributions: 98", badge(98))
 
 
 class InventoryTests(unittest.TestCase):

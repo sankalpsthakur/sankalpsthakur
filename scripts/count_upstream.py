@@ -178,14 +178,15 @@ def count(prs, request=api):
 
 
 def badge(total):
-    label = "accepted upstream contributions"
-    width = 236 + max(28, 10 + len(str(total)) * 7)
+    label = "upstream contributions"
+    label_width = 152
+    width = label_width + max(28, 10 + len(str(total)) * 7)
     text = html.escape(f"{label}: {total}")
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="20" role="img" '
-            f'aria-label="{text}"><title>{text}</title><rect width="236" height="20" fill="#555"/>'
-            f'<rect x="236" width="{width - 236}" height="20" fill="#1f6feb"/>'
+            f'aria-label="{text}"><title>{text}</title><rect width="{label_width}" height="20" fill="#555"/>'
+            f'<rect x="{label_width}" width="{width - label_width}" height="20" fill="#1f6feb"/>'
             '<g fill="#fff" text-anchor="middle" font-family="Verdana,sans-serif" font-size="11">'
-            f'<text x="118" y="14">{label}</text><text x="{(236 + width) / 2}" y="14">{total}</text></g></svg>')
+            f'<text x="{label_width / 2}" y="14">{label}</text><text x="{(label_width + width) / 2}" y="14">{total}</text></g></svg>')
 
 
 def publish(report):
