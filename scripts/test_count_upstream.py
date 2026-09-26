@@ -312,6 +312,10 @@ class ReplacementTests(unittest.TestCase):
         original["repository"]["nameWithOwner"] = "old/docs"
         self.assertFalse(incorporation("Brings in the substance of #42", original, "upstream/project"))
 
+    def test_full_url_and_qualified_number_require_exact_pr(self):
+        for reference in ["https://github.com/upstream/project/pull/420", "upstream/project#420"]:
+            self.assertFalse(incorporation(f"Migrated from: {reference}", pr(), "other/repo"))
+
 
 class InventoryTests(unittest.TestCase):
     def response(self, nodes, more=False, cursor=None):

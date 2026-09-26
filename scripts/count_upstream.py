@@ -139,9 +139,9 @@ def credited_commit(repo, sha, request=api):
 def incorporation(text, original, target_repo):
     """Explicit incorporation only; fixes/related/supersedes alone do not qualify."""
     text = re.sub(r"<!--.*?-->", "", text or "", flags=re.S)
-    references = [re.escape(original["url"])]
+    references = [re.escape(original["url"]) + r"(?![\w/])"]
     source_repo = original["repository"]["nameWithOwner"]
-    references.append(re.escape(f"{source_repo}#{original['number']}"))
+    references.append(re.escape(f"{source_repo}#{original['number']}") + r"(?!\d)")
     if source_repo.lower() == target_repo.lower():
         references.append(rf"(?<![\w/])#{original['number']}(?!\d)")
     ref = "(?:" + "|".join(references) + ")"
