@@ -1,5 +1,7 @@
 # Sankalp Thakur
 
+<img src="./assets/profile.jpg" alt="Sankalp Thakur" width="128" align="right">
+
 industrial AI and OT/IT architect in Abu Dhabi. i connect field instrumentation and control systems to operational data, digital twins and useful AI.
 
 at Técnicas Reunidas, i design digital architecture for ADNOC Lower Zakum O&M. current design-stage work covers an NVIDIA Omniverse digital twin and situational awareness module, HLDs for 21 digital services, and Yokogawa FKDPP integration. i map PLC/ICSS, Modbus TCP, OPC UA and historian data through Purdue and IEC 62443 boundaries, industrial DMZs and enterprise systems. control interfaces remain bounded and operator-approved.
