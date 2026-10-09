@@ -2,9 +2,7 @@
 
 industrial AI and OT/IT architect in Abu Dhabi. i connect field instrumentation and control systems to operational data, digital twins and useful AI.
 
-i worked on green hydrogen SCADA and Azure IoT at Hygenco. my open source work spans nearly 100 merged upstream PRs across 40+ public repositories, including [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971), [FreeOpcUa](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998) and [Eclipse Ditto](https://github.com/eclipse-ditto/ditto/pull/2545).
-
-the same join fails upstream.
+i work on green hydrogen SCADA and Azure IoT. my open source work spans nearly 100 merged upstream PRs across 40+ public repositories, including [PyModbus](https://github.com/pymodbus-dev/pymodbus/pull/2971), [FreeOpcUa](https://github.com/FreeOpcUa/opcua-asyncio/pull/1998) and [Eclipse Ditto](https://github.com/eclipse-ditto/ditto/pull/2545).
 
 [![upstream contributions](https://gist.githubusercontent.com/sankalpsthakur/9cded476f436ff505a842e1f9293c4ae/raw/upstream-merged-prs.svg?v=5)](./UPSTREAM-CONTRIBUTIONS.md)
 
