@@ -153,6 +153,22 @@ def incorporation(text, original, target_repo):
         for paragraph in re.split(r"\n\s*\n", text)))
 
 
+def paginated_pr_commits(repo, replacement, request=api):
+    """Read large PR commit ranges without the PR endpoints' 250-commit cap."""
+    base, head = replacement["base"]["sha"], replacement["head"]["sha"]
+    commits, page = [], 1
+    while True:
+        data = request(f"repos/{repo}/compare/{base}...{head}", per_page=100, page=page)
+        part = data["commits"]
+        commits.extend(part)
+        if len(part) < 100 or len(commits) >= data["total_commits"]:
+            if (len(commits) != data["total_commits"] or len(commits) != replacement["commits"]
+                    or len({c["sha"] for c in commits}) != len(commits)):
+                raise RuntimeError(f"Incomplete replacement commits: {repo}#{replacement['number']}")
+            return commits
+        page += 1
+
+
 def replacement_landings(pr, events, request=api):
     """Follow linked replacement PRs across repositories, without a ledger."""
     urls = set()
@@ -181,8 +197,13 @@ def replacement_landings(pr, events, request=api):
             if len(part) < 100:
                 break
             page += 1
-        # GitHub caps this endpoint at 250 commits. Never treat that as complete.
-        if replacement.get("commits", len(commits)) != len(commits) or len(commits) >= 250:
+        # PR commit endpoints cap at 250; compare the same immutable range instead.
+        if len(commits) >= 250:
+            complete = paginated_pr_commits(repo, replacement, request)
+            if not {c["sha"] for c in commits} <= {c["sha"] for c in complete}:
+                raise RuntimeError(f"Replacement commit range mismatch: {url}")
+            commits = complete
+        if replacement.get("commits", len(commits)) != len(commits):
             raise RuntimeError(f"Incomplete replacement commits: {url}")
         body = replacement.get("body") or ""
         explicit = incorporation(body, pr, repo)

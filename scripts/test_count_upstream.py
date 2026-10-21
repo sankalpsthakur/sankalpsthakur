@@ -286,6 +286,41 @@ class ReplacementTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             discover(pr(), self.request)
 
+    def large_replacement_request(self, total, incomplete=False, repeated=False):
+        self.replacement.update(number=99, commits=total, body="", head={"sha": "e" * 40})
+        self.replacement["base"]["sha"] = "d" * 40
+        commits = [{
+            "sha": f"{i:040x}",
+            "commit": {"message": f"Migrated from: {pr()['url']}" if i == total - 1 else "Unrelated change"},
+            "author": {"login": USER if i == total - 1 else "maintainer"},
+        } for i in range(total)]
+
+        def request(endpoint, **fields):
+            start = (fields.get("page", 1) - 1) * 100
+            if endpoint.endswith("/pulls/99/commits"):
+                return commits[start:min(start + 100, 250)]
+            if endpoint.endswith(f"/compare/{'d' * 40}...{'e' * 40}"):
+                part = commits[:100] if repeated else commits[start:min(start + 100, total - int(incomplete))]
+                return {"total_commits": total, "commits": part}
+            return self.request(endpoint, **fields)
+
+        return request
+
+    def test_large_replacement_finds_credit_beyond_rest_commit_cap(self):
+        for total in (250, 340):
+            with self.subTest(total=total):
+                evidence = discover(pr(), self.large_replacement_request(total))["commits"][0]
+                self.assertEqual(evidence["attribution"], "git_authorship")
+                self.assertEqual(evidence["credited_commits"], [f"{total - 1:040x}"])
+
+    def test_incomplete_large_replacement_still_fails_closed(self):
+        with self.assertRaises(RuntimeError):
+            discover(pr(), self.large_replacement_request(340, incomplete=True))
+
+    def test_large_replacement_repeated_pages_fail_closed(self):
+        with self.assertRaises(RuntimeError):
+            discover(pr(), self.large_replacement_request(340, repeated=True))
+
     def test_replacement_already_in_merged_inventory_not_double_counted(self):
         self.assertEqual(count([pr(), pr(99, "MERGED")], self.request)["count"], 1)
 
