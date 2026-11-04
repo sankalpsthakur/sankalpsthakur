@@ -16,20 +16,26 @@ GIST = "9cded476f436ff505a842e1f9293c4ae"
 _last_search = 0.0
 
 
-def api(endpoint, **fields):
-    """Read GitHub with search pacing and bounded transient-error retries."""
+def api(endpoint, accept=None, **fields):
+    """Read GitHub with search pacing and bounded transient-error retries.
+
+    With accept (a media type such as a diff), return the raw body instead of JSON."""
     global _last_search
     if endpoint.startswith("search/"):
         time.sleep(max(0, 2.2 - (time.monotonic() - _last_search)))
         _last_search = time.monotonic()
     args = ["gh", "api", endpoint]
+    if accept:
+        args.extend(["-H", f"Accept: {accept}"])
     if endpoint != "graphql":
         args.extend(["-X", "GET"])
     for key, value in fields.items():
         args.extend(["-f", f"{key}={value}"])
     for attempt in range(4):
-        result = subprocess.run(args, text=True, capture_output=True)
+        result = subprocess.run(args, capture_output=True, encoding="utf-8", errors="surrogateescape")
         if result.returncode == 0:
+            if accept:
+                return result.stdout
             data = json.loads(result.stdout)
             if isinstance(data, dict) and data.get("errors"):
                 raise RuntimeError(f"Partial GraphQL response: {endpoint}")
@@ -51,7 +57,7 @@ def inventory(request=api):
         query = f'''query {{ user(login: "{USER}") {{ pullRequests(
           first: 100, states: [CLOSED, MERGED], orderBy: {{field: CREATED_AT, direction: ASC}}{after}
         ) {{ pageInfo {{hasNextPage endCursor}} nodes {{
-          number url state mergedAt author {{login}}
+          number url state createdAt mergedAt author {{login}}
           repository {{nameWithOwner isPrivate owner {{login}} defaultBranchRef {{name target {{oid}}}}}}
         }} }} }} }}'''
         connection = request("graphql", query=query)["data"]["user"]["pullRequests"]
@@ -248,6 +254,97 @@ def replacement_landings(pr, events, request=api):
     return accepted
 
 
+def patch_id(diff):
+    """Git's stable patch ID: the same change keeps its ID when line numbers or whitespace shift."""
+    if not diff or not diff.strip():
+        return None
+    result = subprocess.run(["git", "patch-id", "--stable"], input=diff, capture_output=True,
+                            encoding="utf-8", errors="surrogateescape", check=True)
+    return result.stdout.split()[0] if result.stdout.strip() else None
+
+
+def diff_patch_id(endpoint, request=api):
+    try:
+        return patch_id(request(endpoint, accept="application/vnd.github.diff"))
+    except RuntimeError as error:
+        # A diff too large to render (406) or no longer available has no ID, so it matches nothing.
+        if re.search(r"HTTP (404|406|422)", str(error)):
+            return None
+        raise
+
+
+def pr_patch_ids(repo, number, request=api):
+    """IDs of each PR commit and of the whole PR diff, so rebased and squashed landings both match."""
+    commits, page = [], 1
+    while True:
+        part = request(f"repos/{repo}/pulls/{number}/commits", per_page=100, page=page)
+        commits.extend(part)
+        if len(part) < 100:
+            break
+        page += 1
+    if len(commits) >= 250:
+        raise RuntimeError(f"Incomplete PR commits for patch IDs: {repo}#{number}")
+    ids = {diff_patch_id(f"repos/{repo}/commits/{c['sha']}", request) for c in commits}
+    ids.add(diff_patch_id(f"repos/{repo}/pulls/{number}", request))
+    ids.discard(None)
+    return ids
+
+
+def lands_other_pr(message, repo, number):
+    """A commit that follows a landing convention for another PR is that PR's landing."""
+    subject = message.splitlines()[0] if message else ""
+    numbers = re.findall(r"\(#(\d+)\)\s*$", subject) + re.findall(r"^Merge pull request #(\d+)", subject, re.I)
+    numbers += re.findall(rf"^PR-URL:\s*https://github\.com/{re.escape(repo)}/pull/(\d+)/?\s*$", message, re.I | re.M)
+    return any(int(n) != number for n in numbers)
+
+
+def patch_landings(pr, branch, request=api):
+    """Find a patch a maintainer applied by hand under the contributor's authorship.
+
+    The landed commit then has a new SHA and may not mention the PR, but it keeps
+    Git's patch ID. Only commits authored by the contributor, committed by someone
+    else on the default branch since the PR was opened, are compared, and one that
+    landed through a merged PR is left to that PR.
+    """
+    repo, number, tip = pr["repository"]["nameWithOwner"], pr["number"], branch["target"]["oid"]
+    fields = {"author": USER, "sha": tip, "per_page": 100}
+    if pr.get("createdAt"):
+        fields["since"] = pr["createdAt"]
+    listed, page = [], 1
+    while True:
+        part = request(f"repos/{repo}/commits", page=page, **fields)
+        listed.extend(part)
+        if len(part) < 100:
+            break
+        page += 1
+    wanted = None
+    accepted, rejected = [], []
+    for commit in listed:
+        sha, message = commit["sha"], commit["commit"]["message"]
+        # GitHub's merge button commits as web-flow, and a commit the contributor committed
+        # himself came in through his PR: either way that PR, not a hand-applied patch, landed it.
+        committer = (commit.get("committer") or {}).get("login", "").lower()
+        if ((commit.get("author") or {}).get("login", "").lower() != USER.lower()
+                or committer in (USER.lower(), "web-flow")
+                or re.match(r"revert\b", message, re.I) or lands_other_pr(message, repo, number)):
+            continue
+        if wanted is None:
+            wanted = pr_patch_ids(repo, number, request)
+        identifier = diff_patch_id(f"repos/{repo}/commits/{sha}", request)
+        if identifier is None or identifier not in wanted:
+            continue
+        if any(p.get("merged_at") for p in request(f"repos/{repo}/commits/{sha}/pulls", per_page=100)):
+            rejected.append({"commit": sha, "reason": "landed_via_merged_pr"})
+            continue
+        comparison = request(f"repos/{repo}/compare/{sha}...{quote(tip, safe='')}")
+        if comparison["status"] not in ("ahead", "identical") or comparison["behind_by"] != 0:
+            rejected.append({"commit": sha, "reason": "not_on_default_branch"})
+            continue
+        accepted.append({"sha": sha, "url": commit["html_url"], "author": USER,
+                         "attribution": "git_authorship", "matched_by": "patch_id", "patch_id": identifier})
+    return accepted, rejected
+
+
 def discover(pr, request=api):
     repo = pr["repository"]["nameWithOwner"]
     number = pr["number"]
@@ -285,6 +382,10 @@ def discover(pr, request=api):
         accepted.append({"sha": sha, "url": commit["html_url"], "author": author,
                          "attribution": "git_authorship"})
     accepted.extend(replacement_landings(pr, events, request))
+    if not accepted and branch:
+        found, missed = patch_landings(pr, branch, request)
+        accepted.extend(found)
+        rejected.extend(missed)
     return {
         "pr": pr["url"], "repository": repo, "number": number,
         "default_branch": branch["name"] if branch else None,
@@ -296,7 +397,7 @@ def discover(pr, request=api):
 
 def count(prs, request=api):
     merged, supplemental, unresolved = [], [], []
-    seen = set()
+    seen, counted = set(), set()
     landing_prs = {p["url"].lower() for p in prs if p["state"] == "MERGED" and p["mergedAt"]}
     for index, pr in enumerate(prs, 1):
         key = pr["url"].lower()
@@ -312,8 +413,12 @@ def count(prs, request=api):
             # evidence routes for the same contribution, not two contributions.
             if any(c.get("landing_pr", "").lower() in landing_prs for c in evidence["commits"]):
                 evidence["commits"] = []
+            # Closed PRs with the same change can match one hand-applied commit; count it once.
+            evidence["commits"] = [c for c in evidence["commits"]
+                                   if c.get("matched_by") != "patch_id" or c["sha"] not in counted]
             if evidence["commits"]:
                 landing_prs.update(c["landing_pr"].lower() for c in evidence["commits"] if c.get("landing_pr"))
+                counted.update(c.get("sha") for c in evidence["commits"])
             elif evidence.get("reason") == "verified_landing":
                 evidence["reason"] = "landing_already_counted"
             (supplemental if evidence["commits"] else unresolved).append(evidence)

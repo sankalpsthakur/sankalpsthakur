@@ -1,17 +1,46 @@
 import copy
+import re
 import unittest
 import json
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from count_upstream import USER, badge, count, discover, inventory, incorporation, landing_reference, main, publish, search_candidates, timeline_candidates
+from count_upstream import USER, badge, count, discover, inventory, incorporation, landing_reference, main, patch_id, publish, search_candidates, timeline_candidates
+
+DIFF = """diff --git a/src/mailbox.c b/src/mailbox.c
+index 1111111..2222222 100644
+--- a/src/mailbox.c
++++ b/src/mailbox.c
+@@ -10,7 +10,7 @@ int read_mailbox(void)
+ {
+     int wkc = receive();
+-    copy(payload, in);
++    payload = locate(in);
+     return wkc;
+ }
+"""
+# The same change applied elsewhere in the file, with other blob IDs and spacing.
+SHIFTED_DIFF = (DIFF.replace("-10,7 +10,7", "-40,7 +41,7").replace("1111111..2222222", "abcdef0..1234567")
+                .replace("payload = locate(in);", "payload  =  locate(in);"))
+OTHER_DIFF = DIFF.replace("locate(in)", "locate(out)")
+HEADER_DIFF = """diff --git a/src/mailbox.h b/src/mailbox.h
+index 3333333..4444444 100644
+--- a/src/mailbox.h
++++ b/src/mailbox.h
+@@ -3,3 +3,4 @@
+ #define MAILBOX_H
+ int read_mailbox(void);
++void *locate(void *in);
+ #endif
+"""
 
 
 def pr(number=42, state="CLOSED"):
     return {
         "number": number, "url": f"https://github.com/upstream/project/pull/{number}",
-        "state": state, "mergedAt": "2026-09-15T00:00:00Z" if state == "MERGED" else None,
+        "state": state, "createdAt": "2026-09-01T00:00:00Z",
+        "mergedAt": "2026-09-15T00:00:00Z" if state == "MERGED" else None,
         "author": {"login": USER}, "repository": {
             "nameWithOwner": "upstream/project", "owner": {"login": "upstream"}, "isPrivate": False,
             "defaultBranchRef": {"name": "main", "target": {"oid": "b" * 40}},
@@ -29,9 +58,23 @@ class DiscoveryTests(unittest.TestCase):
         self.comparison = {"status": "ahead", "behind_by": 0}
         self.calls = []
         self.coauthors = []
+        # Patch-ID route: the contributor's commits on the default branch since the PR opened,
+        # the PR's own commits, diffs by endpoint, and the PRs associated with a commit.
+        self.listed = []
+        self.pr_commits = []
+        self.diffs = {}
+        self.associated = []
 
     def request(self, endpoint, **fields):
         self.calls.append((endpoint, fields))
+        if fields.get("accept"):
+            return self.diffs.get(endpoint, "")
+        if endpoint == "repos/upstream/project/commits":
+            return self.listed
+        if re.search(r"/pulls/\d+/commits$", endpoint):
+            return self.pr_commits
+        if endpoint.endswith("/pulls"):
+            return self.associated
         if endpoint == "search/commits":
             return self.search
         if endpoint == "graphql":
@@ -406,3 +449,102 @@ class PublicationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PatchIdTests(unittest.TestCase):
+    """A maintainer applies the PR's patch by hand: new SHA, no PR reference, same patch ID."""
+
+    def setUp(self):
+        DiscoveryTests.setUp(self)
+        self.search = {"incomplete_results": False, "total_count": 0, "items": []}
+        self.landed, self.source = "d" * 40, "e" * 40
+        self.listed = [{"sha": self.landed, "html_url": f"https://github.com/upstream/project/commit/{self.landed}",
+                        "author": {"login": USER}, "committer": {"login": "maintainer"},
+                        "commit": {"message": "Locate the payload after receive"}}]
+        self.pr_commits = [{"sha": self.source}]
+        self.diffs = {f"repos/upstream/project/commits/{self.source}": DIFF,
+                      "repos/upstream/project/pulls/42": DIFF,
+                      f"repos/upstream/project/commits/{self.landed}": SHIFTED_DIFF}
+
+    def request(self, endpoint, **fields):
+        return DiscoveryTests.request(self, endpoint, **fields)
+
+    def test_patch_id_ignores_position_and_whitespace_only(self):
+        self.assertEqual(patch_id(DIFF), patch_id(SHIFTED_DIFF))
+        self.assertNotEqual(patch_id(DIFF), patch_id(OTHER_DIFF))
+        self.assertIsNone(patch_id(""))
+
+    def test_hand_applied_patch_counts(self):
+        report = count([pr()], self.request)
+        self.assertEqual((report["landed"], report["count"], report["authorship_credited_landings"]), (1, 1, 1))
+        evidence = report["verified_landings"][0]["commits"][0]
+        self.assertEqual((evidence["sha"], evidence["matched_by"]), (self.landed, "patch_id"))
+        listing = [f for e, f in self.calls if e == "repos/upstream/project/commits"][0]
+        self.assertEqual((listing["author"], listing["sha"], listing["since"]), (USER, "b" * 40, pr()["createdAt"]))
+
+    def test_different_patch_not_counted(self):
+        self.diffs[f"repos/upstream/project/commits/{self.landed}"] = OTHER_DIFF
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_squashed_landing_matches_whole_pr_diff(self):
+        # Two PR commits, landed as one: only the whole PR diff has the landed commit's ID.
+        second = "f" * 40
+        self.pr_commits = [{"sha": self.source}, {"sha": second}]
+        self.diffs[f"repos/upstream/project/commits/{second}"] = HEADER_DIFF
+        self.diffs["repos/upstream/project/pulls/42"] = DIFF + HEADER_DIFF
+        self.diffs[f"repos/upstream/project/commits/{self.landed}"] = SHIFTED_DIFF + HEADER_DIFF
+        self.assertNotIn(patch_id(SHIFTED_DIFF + HEADER_DIFF), {patch_id(DIFF), patch_id(HEADER_DIFF)})
+        self.assertEqual(discover(pr(), self.request)["commits"][0]["sha"], self.landed)
+
+    def test_patch_landed_through_merged_pr_left_to_that_pr(self):
+        self.associated = [{"number": 50, "merged_at": "2026-09-20T00:00:00Z"}]
+        evidence = discover(pr(), self.request)
+        self.assertFalse(evidence["commits"])
+        self.assertEqual(evidence["rejected_candidates"], [{"commit": self.landed, "reason": "landed_via_merged_pr"}])
+
+    def test_other_pr_landing_revert_or_other_author_not_counted(self):
+        for message in ["Locate the payload (#50)", "Merge pull request #50 from fork/branch",
+                        'Revert "Locate the payload"']:
+            self.listed[0]["commit"]["message"] = message
+            self.assertFalse(discover(pr(), self.request)["commits"], message)
+        self.listed[0]["commit"]["message"] = "Locate the payload after receive"
+        self.listed[0]["author"] = {"login": "maintainer"}
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_merge_button_or_own_commits_are_not_compared(self):
+        for committer in ["web-flow", USER]:
+            self.calls = []
+            self.listed[0]["committer"] = {"login": committer}
+            self.assertFalse(discover(pr(), self.request)["commits"], committer)
+            self.assertFalse([e for e, f in self.calls if f.get("accept")], committer)
+        self.listed[0]["committer"] = None
+        self.assertTrue(discover(pr(), self.request)["commits"])
+
+    def test_off_default_branch_not_counted(self):
+        self.comparison = {"status": "diverged", "behind_by": 1}
+        self.assertFalse(discover(pr(), self.request)["commits"])
+
+    def test_unrenderable_diff_matches_nothing(self):
+        original = self.request
+        def too_large(endpoint, **fields):
+            if fields.get("accept") and endpoint.endswith(self.landed):
+                raise RuntimeError("GitHub request failed: HTTP 406")
+            return original(endpoint, **fields)
+        self.assertFalse(discover(pr(), too_large)["commits"])
+        def outage(endpoint, **fields):
+            if fields.get("accept"):
+                raise RuntimeError("GitHub retry budget exhausted")
+            return original(endpoint, **fields)
+        with self.assertRaises(RuntimeError):
+            discover(pr(), outage)
+
+    def test_one_commit_counts_once_for_duplicate_prs(self):
+        self.diffs["repos/upstream/project/pulls/43"] = DIFF
+        report = count([pr(), pr(43)], self.request)
+        self.assertEqual(report["landed"], 1)
+        self.assertEqual(report["unverified_closed_prs"][0]["reason"], "landing_already_counted")
+
+    def test_reference_landing_skips_patch_comparison(self):
+        DiscoveryTests.setUp(self)
+        self.assertTrue(discover(pr(), self.request)["commits"])
+        self.assertFalse([e for e, f in self.calls if e == "repos/upstream/project/commits" or f.get("accept")])
